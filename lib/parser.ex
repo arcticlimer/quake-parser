@@ -7,7 +7,7 @@ defmodule QuakeLogs.Parser do
   @log_object %{current_game: nil, games: [], global_ranking: %{}}
 
   @doc """
-  Receives a raw logs string, parses it and returns a
+  Receives a raw logs binary, parses it and returns a
   map containing useful information about the logs
   """
   def parse(log_lines) do
@@ -25,10 +25,10 @@ defmodule QuakeLogs.Parser do
       {:game_ended, _} ->
         {game, updated_map} = Map.pop!(acc, :current_game)
         Map.update(updated_map, :games, [], &(&1 ++ [game]))
-      {:kill, %{"dead" => dead, "killer" => killer, "meaning" => meaning}} ->
+      {:kill, %{"dead" => dead, "killer" => killer, "mean" => mean}} ->
         acc
         |> update_game_total_kills(&inc/1)
-        |> update_kill_by_meaning(meaning, &inc/1)
+        |> update_kill_by_mean(mean, &inc/1)
         |> update_player_kills(killer, &inc/1)
         |> update_player_kills(dead, &dec/1)
         |> update_global_ranking(killer, &inc/1)
@@ -47,7 +47,7 @@ defmodule QuakeLogs.Parser do
       event?(line, "Kill") ->
         {:kill,
           Regex.named_captures(
-            ~r'\d+:\s(?<killer>.+)\skilled\s(?<dead>.+)\sby\s(?<meaning>.+)$',
+            ~r'\d+:\s(?<killer>.+)\skilled\s(?<dead>.+)\sby\s(?<mean>.+)$',
             line
           )
         }
@@ -59,11 +59,11 @@ defmodule QuakeLogs.Parser do
   defp inc(n), do: n + 1
   defp dec(n), do: n - 1
 
-  defp update_kill_by_meaning(global_log, meaning, callback) do
-    meaning_key = Access.key(meaning, 0)
+  defp update_kill_by_mean(global_log, mean, callback) do
+    mean_key = Access.key(mean, 0)
     update_in(
       global_log,
-      [:current_game, :kills_by_means, meaning_key],
+      [:current_game, :kills_by_means, mean_key],
       callback
     )
   end
