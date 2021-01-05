@@ -7,10 +7,8 @@ defmodule QuakeLogs.Parser do
   @log_object %{current_game: nil, games: [], global_ranking: %{}}
 
   @doc """
-  Receives a raw logs string or the same split by newline characters,
-  parses it and returns a map containing `games`, (array with information
-  about each match) and `global_ranking` the global score of all users that
-  played in that log.
+  Receives a raw logs string, parses it and returns a
+  map containing useful information about the logs
   """
   def parse(log_lines) do
     log_lines
